@@ -1,0 +1,24 @@
+{
+  "name": "chatapp",
+  "version": "1.0.0",
+  "description": "chat app",
+  "main": "chatapp.js",
+  "scripts": {
+    "test": "nop"
+  },
+  "repository": {
+    "type": "git",
+    "url": "nop"
+  },
+  "keywords": [
+    "chat",
+    "app"
+  ],
+  "author": "devp",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "express": "^4.15.3",
+    "socket.io": "^2.0.3",
+    "uuid": "^3.1.0"
+  }
+}

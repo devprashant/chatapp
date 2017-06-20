@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      #fm { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      #fm input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      #fm button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+
+      .uf { background: #000; padding: 3px;bottom: 0; width: 100%; }
+      .uf input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      .uf button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      $(function () {
+
+        const uuid = location.pathname.match(/\/user\/(.*)/)[1];
+        // const username = $(val)
+
+        // fetch('http://localhost:3000/uuid')
+        //   .then(res => res.json())
+        //   .then(uuid => {
+        //     uuid = uuid;
+        //     $('#uid').val(uuid.uuid)
+        //   });
+
+        $('#uid').val(uuid);
+
+        var socket = io();
+
+        // message form
+        $('#fm').submit(function(){
+          socket.emit('chat message', $('#m').val());
+          $('#m').val('');
+          return false;
+        });
+
+        // chat room join form
+        $('#fjoin').submit(function(){
+          socket.emit('join', $('#j').val());
+          $('#j').val('');
+          return false;
+        });
+
+        // username form
+        $('#fname').submit(function(){
+          socket.emit('setusername', $('#name').val());
+          $('#name').prop('disabled', true);
+          // $('#name').val('');
+          return false;
+        });
+
+        $('#name').change(function() {
+          socket.emit('changeusername', $('#name').val());
+        });
+
+        socket.on('chat message', function(msg){
+          $('#messages').append($('<li>').text(msg));
+        });
+
+        socket.on('connect', () => {
+          
+          socket.emit('init', getUserObj);
+          // socket.emit('setusername', $('#name').val());
+          // socket.emit('join', $('#j').val());
+          // socket.emit('setUidsocketMap', uuid);
+          console.log('socket id created from client: ' + socket.id )
+        });
+
+        socket.on('rooms', (msg) => console.log(/*'socket id received frmo server: ' +*/ msg));
+        socket.on('disconnect', (msg) => console.log(msg));
+        socket.on('namechange', (msg) => $('#messages').append($('<li>').text(msg)));
+      });
+
+      function getUserObj(){
+        return  { username: $('#name').val(), uuid: uuid };
+      }
+    </script>
+  </head>
+  <body>
+    <form id="fjoin" class="uf" action="">
+      <input id="j" autocomplete="off" value="sampleid"/><button>Join</button>
+    </form>
+    <form id="fname" class="uf" action="">
+      <input id="name" autocomplete="off" /><button>Name</button>
+    </form>
+    <form id="fuid" class="uf" action="">
+      <input id="uid" autocomplete="off" disabled="" /><button>UID</button>
+    </form>
+
+    <ul id="messages"></ul>
+    <form id="fm" action="">
+      <input id="m" autocomplete="off" /><button>Send</button>
+    </form>
+  </body>
+</html>

@@ -21,7 +21,9 @@
     <script>
       $(function () {
 
+        // get uuid from url parsing here
         const uuid = location.pathname.match(/\/user\/(.*)/)[1];
+
         // const username = $(val)
 
         // fetch('http://localhost:3000/uuid')
@@ -37,28 +39,29 @@
 
         // message form
         $('#fm').submit(function(){
-          socket.emit('chat message', $('#m').val());
+          socket.emit('chat message', $('#name').val() + ': ' + $('#m').val());
           $('#m').val('');
           return false;
         });
 
         // chat room join form
         $('#fjoin').submit(function(){
-          socket.emit('join', $('#j').val());
-          $('#j').val('');
+          // const
+          const userConnObj = getUserObj();
+          userConnObj.ruuid = $('#j').val();
+          socket.emit('join', userConnObj);
+          // $('#j').val('');
           return false;
         });
 
         // username form
-        $('#fname').submit(function(){
-          socket.emit('setusername', $('#name').val());
-          $('#name').prop('disabled', true);
-          // $('#name').val('');
-          return false;
+        $('#fname').submit(function(e){
+          e.preventDefault();
+          socket.emit('init', getUserObj());
         });
 
         $('#name').change(function() {
-          socket.emit('changeusername', $('#name').val());
+          // socket.emit('init', getUserObj);
         });
 
         socket.on('chat message', function(msg){
@@ -67,21 +70,33 @@
 
         socket.on('connect', () => {
           
-          socket.emit('init', getUserObj);
+          socket.emit('init', getUserObj());
           // socket.emit('setusername', $('#name').val());
           // socket.emit('join', $('#j').val());
           // socket.emit('setUidsocketMap', uuid);
           console.log('socket id created from client: ' + socket.id )
+          console.log(socket.rooms);
         });
 
-        socket.on('rooms', (msg) => console.log(/*'socket id received frmo server: ' +*/ msg));
-        socket.on('disconnect', (msg) => console.log(msg));
-        socket.on('namechange', (msg) => $('#messages').append($('<li>').text(msg)));
+        // socket.on()
+
+        // socket.on('rooms', (msg) => console.log(/*'socket id received frmo server: ' +*/ msg));
+        // socket.on('disconnect', (msg) => console.log(msg));
+        // socket.on('namechange', (msg) => $('#messages').append($('<li>').text(msg)));
+
+
+        socket.on('newPrivateChat', (msg) => {
+          $('#messages').append($('<li>').text(msg));
+        });
+        
+        function getUserObj(){
+          return  { username: $('#name').val(), uuid: uuid };
+        }
+
+
       });
 
-      function getUserObj(){
-        return  { username: $('#name').val(), uuid: uuid };
-      }
+      
     </script>
   </head>
   <body>

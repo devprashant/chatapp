@@ -60,10 +60,11 @@ function saveMessage(roomid,msg){
   var updated = false;
   
   for(var i =0; i < msgDBArray.length; i++ ){
-     var msgObj = msgArray[i];
+     var msgObj = msgDBArray[i];
      // check if room exited
      // if true add messages to existig message array
     if(msgObj.roomid === roomid){
+      // this if block should never run
       if(!msgObj.messages.length) {
         msgObj.messages = []
       }
@@ -84,25 +85,46 @@ function saveMessage(roomid,msg){
     }
 
     msgDBArray.push(msgObj);
-  }  
+  }
+  console.log(msgDBArray);  
 }
 
+function getMessage(roomid){
+  
+  var msgObj = {};
+  console.log("rid : " + roomid )
+  for (var i = 0; i < msgDBArray.length; i++){
+    
+    if(msgDBArray[i].roomid === roomid){
+      console.log('room idn exist');
+      msgObj = msgDBArray[i];
+      break;
+    }
+  }
+  console.log("message obj");
+  // console.log(msgObj);
+  return msgObj;
+}
 
 /*
 * Here username and room are updated based on uuid
+* returns roomid
 */
 function setUserDB(userObj, socket){
   
 
-  // var userDBObj = { 
-  //   username: userObj.username,
-  //   uuid: userObj.uuid,
-  //   socketid: sokcet
-  // }
+      /*userObj = {
+      username: name,
+      uuid: uuidFromServer,
+      room: roomid
+      //room: roomArray
+    }
+    */
   var updated = false;
 
+  var room;
   // check for uuid and update username
-  for ( var i =0; i < userDBArray.length; i++){
+  for ( var i = 0; i < userDBArray.length; i++){
 
     // true if user already in DB.
     if (userDBArray[i].uuid == userObj.uuid){
@@ -111,12 +133,12 @@ function setUserDB(userObj, socket){
           
           // if updated is true, user is already in DB
           // just add room to the DB.
-          console.log(socket.rooms);
-
-          Object.keys(socket.rooms).forEach((room) => {
-            if(userDBArray[i].rooms.indexOf(room) > -1 ) return;
-            userDBArray[i].rooms.push(room);            
-          });
+          // console.log(socket.rooms);
+          room = userDBArray[i].rooms;
+          // Object.keys(socket.rooms).forEach((room) => {
+          //   if(userDBArray[i].rooms.indexOf(room) > -1 ) return;
+          //   userDBArray[i].rooms.push(room);            
+          // });
           updated = true;
           break;
     }
@@ -132,15 +154,20 @@ function setUserDB(userObj, socket){
       room: roomArray
     }
     */
+    room = Object.keys(socket.rooms)[0]  ;
+
     const newUserObjToInsert = {
       username: userObj.username,
       uuid: userObj.uuid,
       // extract room id from single element room object
-      rooms: [Object.keys(socket.rooms)[0]]  
+      rooms: room
+      // rooms: [Object.keys(socket.rooms)[0]]  
     } 
     
     userDBArray.push(newUserObjToInsert);
   } 
+
+  return room;
   
   console.log(userDBArray); 
 }
@@ -169,8 +196,19 @@ io.on('connection', function(socket){
     socket.on('init', (userObj) => {
       // when initially connects, user is 
       // connected to only a single room.
-      socket.to(socket.id).emit('currentRooms', Object.keys(socket.rooms)[0]);
-      setUserDB(userObj, socket);
+      // socket.to(socket.id).emit('currentRooms', Object.keys(socket.rooms)[0]);
+      var room = setUserDB(userObj, socket); console.log( ' cuurent room for user: ' + userObj.username + " is " + room);
+      var username = userObj.username;
+      socket.join(room, () => io.in(room).emit('chat message', username + ' is connected'));
+      var preMessagesObj = getMessage(room);
+      console.log("check condition for roomid equal to msg array roomid");
+      console.log(room === preMessagesObj.roomid);
+      console.log("actual message object");
+      console.log(preMessagesObj.messages);
+      // if(preMessagesObj) && preMessages.length) {
+        if(preMessagesObj.messages) 
+        io.in(room).emit('restoreMessages',preMessagesObj.messages);
+      // }
       // console.log(userObj);
     });
 
@@ -180,19 +218,30 @@ io.on('connection', function(socket){
       // const newRoom = userConnObj.room;
       const username = userConnObj.username;
 
-      const currentRoom = Object.keys(socket.rooms)[0];
+      // const currentRoom = Object.keys(socket.rooms)[0];
+      var userObj = {
+        username: userConnObj.username,
+        uuid: userConnObj.uuid     
+      }      
 
       // socket.leave(currentRoom, () => io.to(socket.id).emit('leaveroom'), 'Joining to room');
       // get rooms array from receivers uuid
       const rUserObj = getUserDB(userConnObj.ruuid); 
       const rRooms = rUserObj.rooms;
       const rUsername = rUserObj.username;
+      
+      var room = setUserDB(userObj, socket);
+        // leave current room
+      // console.log("previous room for " + userObj + room);
+      socket.leave(room, () => io.to(socket.id).emit('chat message', username + ': connecting to ' + rUsername));
       // fetch socketId for the user connected 
       // and send message to socket to inform him
-      socket.join(rRooms, () =>
-          rRooms.forEach(room => 
-            io.in(room).emit('chat message', username + ': user is connected to ' + rUsername))
-       );
+      // socket.join(rRooms, () =>
+      //     rRooms.forEach(room => 
+      //       io.in(room).emit('chat message', username + ': user is connected to ' + rUsername))
+      //  );
+      console.log( ' cuurent room for user: through join ' + userObj.username + " is " + JSON.stringify(socket.rooms));
+      socket.join(rRooms, () => io.in(rRooms).emit('chat message', username + ': user is connected to ' + rUsername));
     });
     // set username provided by client
     // socket.on('setusername', (username) => {
@@ -205,7 +254,8 @@ io.on('connection', function(socket){
 
     socket.on('chat message', (msg) => {
       var chatMessage = msg;
-      console.log(msg);
+      // console.log(msg);
+      Object.keys(socket.rooms).forEach(room => saveMessage(room, chatMessage));
       // saveMessage(socket.id, chatMessage);
       
       console.log(socket.rooms);
@@ -227,9 +277,9 @@ io.on('connection', function(socket){
     //     socket.join(room, () => socket.emit('rooms', socket.rooms));        
     // });
 
-    socket.on('disconnect', () => {
-      console.log(socket.id + 'disconnected');
-    });
+    // socket.on('disconnect', () => {
+    //   console.log(socket.id + 'disconnected');
+    // });
     // socket.on('changeusername', (username) => {
     //   userDB()
     // });

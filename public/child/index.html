@@ -88,6 +88,10 @@
         socket.on('newPrivateChat', (msg) => {
           $('#messages').append($('<li>').text(msg));
         });
+
+        socket.on('restoreMessages', (msgArray) => {
+          msgArray.forEach(msg => $('#messages').append($('<li>').text(msg)));
+        });
         
         function getUserObj(){
           return  { username: $('#name').val(), uuid: uuid };

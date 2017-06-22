@@ -39,7 +39,11 @@
 
         // message form
         $('#fm').submit(function(){
-          socket.emit('chat message', $('#name').val() + ': ' + $('#m').val());
+          var msgObj = {
+            uuid: uuid,
+            msg: $('#m').val()
+          }
+          socket.emit('chat message', msgObj );
           $('#m').val('');
           return false;
         });
@@ -64,7 +68,14 @@
           // socket.emit('init', getUserObj);
         });
 
-        socket.on('chat message', function(msg){
+        socket.on('chat message', function(msgObj){
+          // var msgObj = {
+          //   uuid: uuid,
+          //   msg: $('#m').val()
+          // }
+          // socket.emit('getusername', msgObj.uuid);
+          // socket.on('')
+          var msg = msgObj.uuid + " : " + msgObj.msg; 
           $('#messages').append($('<li>').text(msg));
         });
 
@@ -90,7 +101,15 @@
         });
 
         socket.on('restoreMessages', (msgArray) => {
-          msgArray.forEach(msg => $('#messages').append($('<li>').text(msg)));
+          if (msgArray){
+            console.log(msgArray.toString());
+            msgArray.forEach(msg => $('#messages').append($('<li>').text(msg)));
+          }
+        });
+
+        socket.on("updateUserName", (username) => {
+          // msgArray.forEach(msg => $('#messages').append($('<li>').text(msg)));
+          $('#name').val(username);
         });
         
         function getUserObj(){

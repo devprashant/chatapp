@@ -129,11 +129,11 @@ function saveMessage(roomid,msgObj){
 function getMessage(roomid){
   
   var msgObjDB = {};
-  // console.log("rid : " + roomid )
   for (var i = 0; i < msgDBArray.length; i++){
     
     if(msgDBArray[i].roomid === roomid){
-      console.log('room idn exist');
+      
+      
       msgObjDB = msgDBArray[i];
       break;
     }
@@ -304,7 +304,7 @@ io.on('connection', function(socket){
       // };
       //   // console.log("socket id before leaving " + socket.id);
       //   io.to(socket.id).emit('chat message', msgObj);
-
+        console.log(" room for " + updatedUserObj.username + " : " + preRoom )
         var preMessagesObjDB = getMessage(preRoom);
         // console.log('typeof ' + typeof(preMessagesObjDB.messages));
         if (preMessagesObjDB.messages != null){
@@ -334,14 +334,12 @@ io.on('connection', function(socket){
             msg: ' is connected'
           };
           // console.log("socket id after joining " + socket.id);
-          console.log(" preRoom for " + updatedUserObj.username + " " + preRoom);
-          console.log(" curRoom for " + updatedUserObj.username + " " + curRoom);
-          console.log(" socket room for " + updatedUserObj.username + " " + JSON.stringify(socket.rooms));
+          // console.log(" preRoom for " + updatedUserObj.username + " " + preRoom);
+          // console.log(" curRoom for " + updatedUserObj.username + " " + curRoom);
+          // console.log(" socket room for " + updatedUserObj.username + " " + JSON.stringify(socket.rooms));
           // console.log( ' current room for user: ' + username + ' is ' + preRoom);
           // io.in(preRoom).emit('chat message', msgObj);
           // io.in(preRoom).emit('setusername', user)
-
-
         });
       });      
 

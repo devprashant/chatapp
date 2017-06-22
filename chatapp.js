@@ -101,7 +101,7 @@ function getMessage(roomid){
       break;
     }
   }
-  console.log("message obj");
+  // console.log("message obj");
   // console.log(msgObj);
   return msgObj;
 }
@@ -110,8 +110,7 @@ function getMessage(roomid){
 * Here username and room are updated based on uuid
 * returns roomid
 */
-function setUserDB(userObj, socket){
-  
+function setUserDB(userObj, socket){  
 
       /*userObj = {
       username: name,
@@ -122,9 +121,8 @@ function setUserDB(userObj, socket){
     */
   var updated = false;
 
-  var room;
-  // check for uuid and update username
-  for ( var i = 0; i < userDBArray.length; i++){
+  var room ;
+  for ( var i = 0; i < userDBArray.length; i++ ){
 
     // true if user already in DB.
     if (userDBArray[i].uuid == userObj.uuid){
@@ -154,7 +152,7 @@ function setUserDB(userObj, socket){
       room: roomArray
     }
     */
-    room = Object.keys(socket.rooms)[0]  ;
+    room = Object.keys(socket.rooms)[0];
 
     const newUserObjToInsert = {
       username: userObj.username,
@@ -176,7 +174,7 @@ function getUserDB(uuid){
 
     var userObj = [];
 
-    for ( var i=0; i< userDBArray.length; i++) {
+    for (var i=0; i< userDBArray.length; i++) {
       if(userDBArray[i].uuid === uuid){
         userObj = userDBArray[i];
         break;
@@ -188,6 +186,20 @@ function getUserDB(uuid){
     return userObj;
 }
 
+function updateRoomForUser(uuid, roomid){
+
+  var room;
+
+  for (var i=0; i< userDBArray.length; i++) {
+      if(userDBArray[i].uuid === uuid){
+        room = userDBArray[i].rooms = roomid;
+        break;
+      } 
+  }
+
+  return room;
+}
+
 io.on('connection', function(socket){
 
     // console.log(socket.handshake.headers.referer);
@@ -197,17 +209,20 @@ io.on('connection', function(socket){
       // when initially connects, user is 
       // connected to only a single room.
       // socket.to(socket.id).emit('currentRooms', Object.keys(socket.rooms)[0]);
-      var room = setUserDB(userObj, socket); console.log( ' cuurent room for user: ' + userObj.username + " is " + room);
+
+      var room = setUserDB(userObj, socket); 
+      console.log( ' current room for user: ' + userObj.username + " is " + room);
       var username = userObj.username;
       socket.join(room, () => io.in(room).emit('chat message', username + ' is connected'));
       var preMessagesObj = getMessage(room);
-      console.log("check condition for roomid equal to msg array roomid");
-      console.log(room === preMessagesObj.roomid);
-      console.log("actual message object");
-      console.log(preMessagesObj.messages);
+      // console.log("check condition for roomid equal to msg array roomid");
+      // console.log(room === preMessagesObj.roomid);
+      // console.log("actual message object");
+      console.log("previous Messages");
+      console.log(preMessagesObj);
       // if(preMessagesObj) && preMessages.length) {
-        if(preMessagesObj.messages) 
-        io.in(room).emit('restoreMessages',preMessagesObj.messages);
+        // if(preMessagesObj.messages) 
+        // io.in(room).emit('restoreMessages',preMessagesObj.messages);
       // }
       // console.log(userObj);
     });
@@ -230,10 +245,15 @@ io.on('connection', function(socket){
       const rRooms = rUserObj.rooms;
       const rUsername = rUserObj.username;
       
-      var room = setUserDB(userObj, socket);
+      // var room = setUserDB(userObj, socket);
+      var room = updateRoomForUser(userObj, rRooms);
         // leave current room
       // console.log("previous room for " + userObj + room);
-      socket.leave(room, () => io.to(socket.id).emit('chat message', username + ': connecting to ' + rUsername));
+      var currentRoom = Object.keys()
+      socket.leave(, () => {
+        // updateRoomForUser(userObj.uuid, rRooms);
+        io.to(socket.id).emit('chat message', username + ': connecting to ' + rUsername)
+      });
       // fetch socketId for the user connected 
       // and send message to socket to inform him
       // socket.join(rRooms, () =>
@@ -267,7 +287,7 @@ io.on('connection', function(socket){
           // console.log(socket.id + ' : ' + room + " : " + socket.rooms[room]);
           // console.log(socket.rooms[room] === room);
           // console.log(room === socket.id);
-          if(room === socket.id) continue;
+          // if(room === socket.id) continue;
     	    io.in(room).emit('chat message', chatMessage);
       }      
     });

@@ -2,7 +2,7 @@
   "name": "chatapp",
   "version": "1.0.0",
   "description": "chat app",
-  "main": "chatapp.js",
+  "main": "chatapp.js",  
   "scripts": {
     "test": "nop"
   },

@@ -5,13 +5,11 @@
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
-      #fm { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      #fm input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      #fm button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      
 
-      .uf { background: #000; padding: 3px;bottom: 0; width: 100%; }
-      .uf input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      .uf button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      .uf { background: #000; padding: 1px;bottom: 0; width: 100%; }
+      .uf input { border: 0; padding: 3px; width: 90%; margin-right: .5%; }
+      .uf button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 1px; }
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
@@ -53,7 +51,11 @@
           // const
           const userConnObj = getUserObj();
           userConnObj.ruuid = $('#j').val();
-          socket.emit('join', userConnObj);
+          socket.emit('join', userConnObj, (confirmation) => {
+            if (confirmation) {
+              $('#messages').empty();;
+            }
+          });
           // $('#j').val('');
           return false;
         });
@@ -61,11 +63,18 @@
         // username form
         $('#fname').submit(function(e){
           e.preventDefault();
-          socket.emit('init', getUserObj());
+          // socket.emit('init', getUserObj());
+          socket.emit('setusername', getUserObj());
         });
 
         $('#name').change(function() {
           // socket.emit('init', getUserObj);
+        });
+
+        $('#flr').submit(function(e) {
+          e.preventDefault();
+
+          socket.emit('leaveroom', getUserObj());
         });
 
         socket.on('chat message', function(msgObj){
@@ -75,8 +84,10 @@
           // }
           // socket.emit('getusername', msgObj.uuid);
           // socket.on('')
-          var msg = msgObj.uuid + " : " + msgObj.msg; 
-          $('#messages').append($('<li>').text(msg));
+          socket.emit('getusername', msgObj.uuid, (username) => {
+            var msg = username + " : " + msgObj.msg; 
+            $('#messages').append($('<li>').text(msg));            
+          });
         });
 
         socket.on('connect', () => {
@@ -89,6 +100,13 @@
           console.log(socket.rooms);
         });
 
+        socket.on('clearmessages', (condition) => {
+          $('#messages').empty();
+        });
+
+        socket.on('updateusername', (username) => {
+          $('#name').val(username);
+        });
         // socket.on()
 
         // socket.on('rooms', (msg) => console.log(/*'socket id received frmo server: ' +*/ msg));
@@ -124,18 +142,22 @@
   </head>
   <body>
     <form id="fjoin" class="uf" action="">
-      <input id="j" autocomplete="off" value="sampleid"/><button>Join</button>
+      <input id="j" autocomplete="off" placeholder="Enter id of other user" /><button>Join</button>
     </form>
     <form id="fname" class="uf" action="">
       <input id="name" autocomplete="off" /><button>Name</button>
     </form>
     <form id="fuid" class="uf" action="">
-      <input id="uid" autocomplete="off" disabled="" /><button>UID</button>
+      <input id="uid" autocomplete="off" disabled="" /><button disabled>UID</button>
+    </form>
+    <form id="fm" class="uf" action="">
+      <input id="m" autocomplete="off" /><button>Send</button>
+    </form>
+    <form id="flr" class="uf" action="">
+      <button style="width: 100%">LEAVE ROOM</button>
     </form>
 
     <ul id="messages"></ul>
-    <form id="fm" action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
+    
   </body>
 </html>

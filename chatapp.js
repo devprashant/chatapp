@@ -553,7 +553,7 @@ io.on('connection', function(socket){
             var test = 'i';
             var msgObjForUser = {
               uuid: uuid,
-              msg: username + 'joined new room'
+              msg: username + ' joined new room'
             };
             io.in(preRoom).emit('chat message', msgObjForAll);
             socket.emit('chat message', msgObjForUser);

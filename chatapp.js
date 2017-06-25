@@ -237,7 +237,7 @@ function updateRoomForUser(uuid, room){
         userDBArray[i].rooms = room;
           console.log("====" + JSON.stringify(userDBArray[i]));
         break;
-      } 
+      }
   }
 
   return room;
@@ -284,7 +284,7 @@ io.on('connection', function(socket){
       } else  {
         // if username not set check for existence of user
         // this will run on refresh
-        var userObjFromDB = getUserDB(userObj.uuid);
+        var userObjFromDB = getUserDB(uuid);
 
         // if true user exists in db
         // if false user does not exist in db
@@ -308,7 +308,7 @@ io.on('connection', function(socket){
         uuid: uuid
       };
 
-      io.to(socket.id).emit('updateUserName', updatedUserObj.username);
+      socket.emit('updateUserName', updatedUserObj.username);
 
       // if user already have a room joined earlier 
       // user will leave current room and join
@@ -437,7 +437,7 @@ io.on('connection', function(socket){
         console.log("previous messages " + JSON.stringify(preMessagesObjDB.messages));
         if(preMessagesObjDB.messages.length){
             preMessagesObjDB.messages.forEach((preMessagesObj) => {
-            io.in(curRoom).emit('chat message', preMessagesObj);
+            socket.emit('chat message', preMessagesObj);
           });              
         }            
       }

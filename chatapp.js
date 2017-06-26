@@ -353,7 +353,7 @@ io.on('connection', function(socket){
               // console.log("i was here");
               // console.log("previous messages")
               preMessagesObjDB.messages.forEach((preMessagesObj) => {
-              io.in(curRoom).emit('chat message', preMessagesObj);
+              socket.emit('chat message', preMessagesObj);
             });              
           }            
         }
@@ -450,12 +450,12 @@ io.on('connection', function(socket){
       //       io.in(room).emit('chat message', username + ': user is connected to ' + rUsername))
       //  );
       var msgObjForAll = {
-        uuid : uuid,
-        msg: userObj.username + ' is connected to ' + userConnObj.username
+        uuid : userObj.uuid,
+        msg: userObj.username + ' is connected ' // + userConnObj.username
       }
 
       // io.in(preRoom).emit('chat message', msgObj, () => {
-      // io.in(newRoom).emit('chat message', msgObjForAll);
+      io.in(newRoom).emit('chat message', msgObjForAll);
 
       var preMessagesObjDB = getMessage(newRoom);
       
@@ -468,14 +468,14 @@ io.on('connection', function(socket){
               socket.join(newRoom, () => {
                 // var roomsNow = socket.rooms;
                 // var test = 'i';
-                socket.emit('clearMessages', 'true');
+                // socket.emit('clearMessages', 'true');
                 var msgObj = {
                   uuid: userObj.uuid,
                   msg: ' is connected to ' + rUsername
                 };
                 socket.emit('chat message', msgObj);
                 if (preMessagesObjDB.messages != null){
-                  console.log("previous messages " + JSON.stringify(preMessagesObjDB.messages));
+                  // console.log("previous messages " + JSON.stringify(preMessagesObjDB.messages));
                   if(preMessagesObjDB.messages.length){
                       preMessagesObjDB.messages.forEach((preMessagesObj) => {
                       socket.emit('chat message', preMessagesObj);

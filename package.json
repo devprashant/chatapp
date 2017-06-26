@@ -2,7 +2,7 @@
   "name": "chatapp",
   "version": "1.0.0",
   "description": "chat app",
-  "main": "chatapp.js",  
+  "main": "chatapp.js",
   "scripts": {
     "test": "nop"
   },
@@ -17,6 +17,7 @@
   "author": "devp",
   "license": "Apache-2.0",
   "dependencies": {
+    "cookie-parser": "^1.4.3",
     "express": "^4.15.3",
     "socket.io": "^2.0.3",
     "uuid": "^3.1.0"

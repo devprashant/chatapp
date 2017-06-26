@@ -15,130 +15,8 @@
       #messages li:nth-child(odd) { background: #eee; }
     </style>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-    <script>
-      $(function () {
-
-        // get uuid from url parsing here
-        const uuid = location.pathname.match(/\/user\/(.*)/)[1];
-
-        // const username = $(val)
-
-        // fetch('http://localhost:3000/uuid')
-        //   .then(res => res.json())
-        //   .then(uuid => {
-        //     uuid = uuid;
-        //     $('#uid').val(uuid.uuid)
-        //   });
-
-        $('#uid').val(uuid);
-
-        var socket = io();
-
-        // message form
-        $('#fm').submit(function(){
-          var msgObj = {
-            uuid: uuid,
-            msg: $('#m').val()
-          }
-          socket.emit('chat message', msgObj );
-          $('#m').val('');
-          return false;
-        });
-
-        // chat room join form
-        $('#fjoin').submit(function(){
-          // const
-          const userConnObj = getUserObj();
-          userConnObj.ruuid = $('#j').val();
-          socket.emit('join', userConnObj, (confirmation) => {
-            if (confirmation) {
-              $('#messages').empty();;
-            }
-          });
-          // $('#j').val('');
-          return false;
-        });
-
-        // username form
-        $('#fname').submit(function(e){
-          e.preventDefault();
-          // socket.emit('init', getUserObj());
-          socket.emit('setusername', getUserObj());
-        });
-
-        $('#name').change(function() {
-          // socket.emit('init', getUserObj);
-        });
-
-        $('#flr').submit(function(e) {
-          e.preventDefault();
-
-          socket.emit('leaveroom', getUserObj());
-        });
-
-        socket.on('chat message', function(msgObj){
-          // var msgObj = {
-          //   uuid: uuid,
-          //   msg: $('#m').val()
-          // }
-          // socket.emit('getusername', msgObj.uuid);
-          // socket.on('')
-          socket.emit('getusername', msgObj.uuid, (username) => {
-            var msg = username + " : " + msgObj.msg; 
-            $('#messages').append($('<li>').text(msg));            
-          });
-        });
-
-        socket.on('connect', () => {
-          
-          socket.emit('init', getUserObj());
-          // socket.emit('setusername', $('#name').val());
-          // socket.emit('join', $('#j').val());
-          // socket.emit('setUidsocketMap', uuid);
-          console.log('socket id created from client: ' + socket.id )
-          console.log(socket.rooms);
-        });
-
-        socket.on('clearmessages', (condition) => {
-          $('#messages').empty();
-        });
-
-        socket.on('updateusername', (username) => {
-          $('#name').val(username);
-        });
-        // socket.on()
-
-        // socket.on('rooms', (msg) => console.log(/*'socket id received frmo server: ' +*/ msg));
-        // socket.on('disconnect', (msg) => console.log(msg));
-        // socket.on('namechange', (msg) => $('#messages').append($('<li>').text(msg)));
-
-
-        socket.on('newPrivateChat', (msg) => {
-          $('#messages').append($('<li>').text(msg));
-        });
-
-        socket.on('restoreMessages', (msgArray) => {
-          if (msgArray){
-            console.log(msgArray.toString());
-            msgArray.forEach(msg => $('#messages').append($('<li>').text(msg)));
-          }
-        });
-
-        socket.on("updateUserName", (username) => {
-          // msgArray.forEach(msg => $('#messages').append($('<li>').text(msg)));
-          $('#name').val(username);
-        });
-        
-        function getUserObj(){
-          return  { username: $('#name').val(), uuid: uuid };
-        }
-
-
-      });
-
-      
-    </script>
+    <script src="/js/jquery-3.2.1.min.js"></script>
+    <script src="/js/chat.js"></script>
   </head>
   <body>
     <form id="fjoin" class="uf" action="">
@@ -158,6 +36,5 @@
     </form>
 
     <ul id="messages"></ul>
-    
   </body>
 </html>
